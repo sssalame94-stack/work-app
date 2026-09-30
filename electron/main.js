@@ -15,7 +15,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1360, height: 900, minWidth: 380, minHeight: 600,
     title: 'Work', backgroundColor: '#f3f6f6', autoHideMenuBar: true,
-    icon: path.join(__dirname, '..', 'assets', 'icon-only.png'),
+    icon: path.join(__dirname, '..', 'assets', 'icon-win.png'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   Menu.setApplicationMenu(null);
