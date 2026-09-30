@@ -1,0 +1,43 @@
+{
+  "name": "work-app",
+  "version": "1.0.0",
+  "description": "Work: ERP for Performance Inc. and other sub-apps",
+  "author": "Performance Inc. SAL",
+  "private": true,
+  "main": "electron/main.js",
+  "scripts": {
+    "desktop": "electron .",
+    "build:win": "electron-builder --win nsis --publish never"
+  },
+  "dependencies": {
+    "@capacitor/android": "~7.6.9",
+    "@capacitor/app": "~7.1.2",
+    "@capacitor/core": "~7.6.9",
+    "@capacitor/filesystem": "~7.1.8",
+    "@capacitor/share": "~7.0.4",
+    "@capgo/capacitor-native-biometric": "~7.6.0",
+    "electron-updater": "^6.8.9"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "~7.6.9",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.performanceinc.workapp",
+    "productName": "Work",
+    "files": ["electron/**", "www/**", "package.json"],
+    "directories": { "output": "dist", "buildResources": "assets" },
+    "win": { "target": "nsis", "icon": "assets/icon-only.png" },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Work",
+      "artifactName": "WorkApp-Setup-${version}.${ext}"
+    },
+    "publish": [{ "provider": "github", "owner": "sssalame94-stack", "repo": "work-app", "releaseType": "release" }]
+  }
+}

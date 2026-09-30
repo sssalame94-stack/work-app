@@ -1,0 +1,10 @@
+{
+  "appId": "com.performanceinc.workapp",
+  "appName": "Work",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#ffffff",
+    "adjustMarginsForEdgeToEdge": "auto"
+  }
+}
