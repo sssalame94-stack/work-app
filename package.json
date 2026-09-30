@@ -29,7 +29,7 @@
     "productName": "Work",
     "files": ["electron/**", "www/**", "package.json"],
     "directories": { "output": "dist", "buildResources": "assets" },
-    "win": { "target": "nsis", "icon": "assets/icon-only.png" },
+    "win": { "target": "nsis", "icon": "assets/icon-win.png" },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
