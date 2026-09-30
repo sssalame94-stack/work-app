@@ -27,17 +27,36 @@
   "build": {
     "appId": "com.performanceinc.workapp",
     "productName": "Work",
-    "files": ["electron/**", "www/**", "package.json"],
-    "directories": { "output": "dist", "buildResources": "assets" },
-    "win": { "target": "nsis", "icon": "assets/icon-win.png" },
+    "files": [
+      "electron/**",
+      "www/**",
+      "package.json"
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "shortcutName": "Work",
-      "artifactName": "WorkApp-Setup-${version}.${ext}"
+      "artifactName": "WorkApp-Setup-${version}.${ext}",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
     },
-    "publish": [{ "provider": "github", "owner": "sssalame94-stack", "repo": "work-app", "releaseType": "release" }]
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "sssalame94-stack",
+        "repo": "work-app",
+        "releaseType": "release"
+      }
+    ]
   }
 }
