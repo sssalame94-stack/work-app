@@ -1,0 +1,80 @@
+# Builds the Android app (APK) and the Windows installer.
+# Runs when you publish a version tag like v1.0.1 (see README), or manually from the Actions tab.
+name: Build Work apps
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - name: Set version
+        shell: bash
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then V="${GITHUB_REF_NAME#v}"; else V="$(node -p "require('./package.json').version")"; fi
+          echo "APP_VERSION=$V" >> "$GITHUB_ENV"
+          echo "window.APP_VERSION='$V';" > www/version.js
+      - run: npm install --no-audit --no-fund
+      - run: npx cap add android
+      - run: npx capacitor-assets generate --android
+      - run: npx cap sync android
+      - name: Version inside the Android app
+        run: |
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"$APP_VERSION\"/" android/app/build.gradle
+      - name: Signing key
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release.keystore
+      - name: Build APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file=$PWD/app/release.keystore \
+            -Pandroid.injected.signing.store.password='${{ secrets.ANDROID_KEYSTORE_PASSWORD }}' \
+            -Pandroid.injected.signing.key.alias='${{ secrets.ANDROID_KEY_ALIAS }}' \
+            -Pandroid.injected.signing.key.password='${{ secrets.ANDROID_KEY_PASSWORD }}'
+      - run: cp android/app/build/outputs/apk/release/app-release.apk "WorkApp-$APP_VERSION.apk"
+      - uses: actions/upload-artifact@v4
+        with: { name: android-apk, path: "WorkApp-*.apk" }
+      - uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: "WorkApp-*.apk"
+          make_latest: true
+
+  windows:
+    needs: android
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Set version
+        shell: bash
+        run: |
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then V="${GITHUB_REF_NAME#v}"; else V="$(node -p "require('./package.json').version")"; fi
+          echo "window.APP_VERSION='$V';" > www/version.js
+          npm version "$V" --no-git-tag-version --allow-same-version
+      - run: npm install --no-audit --no-fund
+      - run: npx electron-builder --win nsis --publish never
+      - uses: actions/upload-artifact@v4
+        with: { name: windows-installer, path: "dist/WorkApp-Setup-*.exe" }
+      - uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            dist/WorkApp-Setup-*.exe
+            dist/WorkApp-Setup-*.exe.blockmap
+            dist/latest.yml
+          make_latest: true
