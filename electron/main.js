@@ -1,5 +1,5 @@
 // Work: Windows desktop app
-const { app, BrowserWindow, protocol, net, shell, Menu } = require('electron');
+const { app, BrowserWindow, protocol, net, shell, Menu, dialog } = require('electron');
 const path = require('path');
 const { pathToFileURL } = require('url');
 const { autoUpdater } = require('electron-updater');
@@ -15,7 +15,7 @@ function createWindow() {
   const win = new BrowserWindow({
     width: 1360, height: 900, minWidth: 380, minHeight: 600,
     title: 'Work', backgroundColor: '#f3f6f6', autoHideMenuBar: true,
-    icon: path.join(__dirname, '..', 'assets', 'icon-win.png'),
+    icon: path.join(__dirname, 'icon.ico'),
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   Menu.setApplicationMenu(null);
@@ -43,10 +43,20 @@ app.whenReady().then(() => {
     }
     return net.fetch(req, { bypassCustomProtocolHandlers: true });
   });
-  createWindow();
-  // Automatic updates from GitHub Releases (your data stays in Supabase)
+  const win = createWindow();
+  // Automatic updates from GitHub Releases (your data stays in Supabase).
+  // When a new version is downloaded, ask to restart now so it applies right away.
   autoUpdater.autoDownload = true;
-  autoUpdater.checkForUpdatesAndNotify().catch(() => {});
+  autoUpdater.autoInstallOnAppQuit = true;
+  autoUpdater.on('update-downloaded', async (info) => {
+    const r = await dialog.showMessageBox(win, {
+      type: 'info', buttons: ['Restart now', 'Later'], defaultId: 0, cancelId: 1,
+      title: 'Work update', message: `Version ${info.version} is ready.`,
+      detail: 'Restart the app to finish the update. Your data is safe.'
+    });
+    if (r.response === 0) autoUpdater.quitAndInstall(false, true);
+  });
+  autoUpdater.checkForUpdates().catch(() => {});
 });
 
 app.on('second-instance', () => {
